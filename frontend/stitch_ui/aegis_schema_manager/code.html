@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AEGIS_TACTICAL - SCHEMA_VIEW</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-tint": "#00dddd",
+              "surface-dim": "#131313",
+              "on-surface-variant": "#b9cac9",
+              "error": "#ffb4ab",
+              "inverse-surface": "#e5e2e1",
+              "on-primary-fixed": "#002020",
+              "on-secondary": "#4c2700",
+              "surface-bright": "#3a3939",
+              "on-tertiary-fixed-variant": "#92001e",
+              "on-tertiary-container": "#ca002d",
+              "on-primary": "#003737",
+              "on-background": "#e5e2e1",
+              "background": "#131313",
+              "tertiary-container": "#ffdad8",
+              "on-secondary-fixed": "#2e1500",
+              "tertiary-fixed-dim": "#ffb3b2",
+              "surface-container-low": "#1c1b1b",
+              "outline": "#839493",
+              "on-tertiary": "#680012",
+              "primary-fixed-dim": "#00dddd",
+              "on-primary-fixed-variant": "#004f4f",
+              "primary": "#ffffff",
+              "surface-container-high": "#2a2a2a",
+              "on-primary-container": "#007070",
+              "inverse-on-surface": "#313030",
+              "on-secondary-container": "#613400",
+              "error-container": "#93000a",
+              "on-surface": "#e5e2e1",
+              "secondary-fixed-dim": "#ffb778",
+              "tertiary": "#ffffff",
+              "surface": "#131313",
+              "on-error-container": "#ffdad6",
+              "surface-container": "#201f1f",
+              "surface-variant": "#353534",
+              "surface-container-lowest": "#0e0e0e",
+              "secondary": "#ffb778",
+              "outline-variant": "#3a4a49",
+              "on-tertiary-fixed": "#410008",
+              "inverse-primary": "#006a6a",
+              "primary-fixed": "#00fbfb",
+              "secondary-container": "#fd9000",
+              "on-secondary-fixed-variant": "#6c3a00",
+              "tertiary-fixed": "#ffdad8",
+              "primary-container": "#00fbfb",
+              "on-error": "#690005",
+              "surface-container-highest": "#353534",
+              "secondary-fixed": "#ffdcc1"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Space Grotesk"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #050505;
+            color: #e5e2e1;
+            font-family: 'Space Grotesk', monospace;
+            overflow-x: hidden;
+        }
+        .scanline-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.03) 50%, transparent 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .tactical-grid {
+            background-image: 
+                linear-gradient(to right, rgba(0, 251, 251, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 251, 251, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .corner-bracket-tl { border-top: 2px solid #00FBFB; border-left: 2px solid #00FBFB; width: 12px; height: 12px; position: absolute; top: -2px; left: -2px; }
+        .corner-bracket-br { border-bottom: 2px solid #00FBFB; border-right: 2px solid #00FBFB; width: 12px; height: 12px; position: absolute; bottom: -2px; right: -2px; }
+        
+        @keyframes pulse-cyan {
+            0%, 100% { opacity: 1; text-shadow: 0 0 20px rgba(0, 251, 251, 0.8); }
+            50% { opacity: 0.7; text-shadow: 0 0 5px rgba(0, 251, 251, 0.2); }
+        }
+        .animate-pulse-cyan {
+            animation: pulse-cyan 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest">
+<div class="scanline-overlay"></div>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50 bg-[#050505] border-b border-[#00FBFB]/20 bg-gradient-to-b from-[#131313] to-[#050505] shadow-[0_0_15px_rgba(0,251,251,0.1)]">
+<div class="flex items-center gap-8">
+<span class="font-black text-xl tracking-[0.2em] text-[#FFFFFF] bg-clip-text">AEGIS_TACTICAL</span>
+<nav class="hidden md:flex gap-6 items-center h-full pt-1">
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">FORENSICS</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#00FBFB] border-b-2 border-[#00FBFB] pb-1 shadow-[0_4px_10px_-2px_rgba(0,251,251,0.5)]" href="#">SCHEMA</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">ASSETS</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">HEATMAP</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-surface-container-low px-3 py-1 border border-outline-variant/20">
+<span class="material-symbols-outlined text-sm text-primary-fixed mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-mono tracking-widest text-primary-fixed uppercase placeholder:text-outline-variant" placeholder="QUERY_DB..." type="text"/>
+</div>
+<button class="p-2 text-[#3A4A49] hover:text-[#00FBFB] transition-colors active:scale-95 duration-75 brightness-125">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="p-2 text-[#3A4A49] hover:text-[#00FBFB] transition-colors active:scale-95 duration-75 brightness-125">
+<span class="material-symbols-outlined" data-icon="pci_card">payment_card</span>
+</button>
+<div class="w-8 h-8 bg-surface-container-highest border border-primary-fixed/30 overflow-hidden">
+<img alt="Operator Avatar" class="w-full h-full object-cover" data-alt="Close up of a futuristic military operator avatar in a dark digital visor with glowing data reflection on the glass surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuvvGyU7oniHUaT1L6EYBbiS7-LDoIuQd4K1GuvBhgI_yta5ZbL0W90wkeKjofGKun8wBUT8nY1RYEitBuy31fbpJZPnb5le6BaKTW_Y26S6Ifl7NbwDrBsa18wOx1KsHgdZiqRLTEZ2-1ui_L_xnZN7apmVHD4iGTjwEk6JsLfuM75KdibQiQF3Zqtd2P_s9tco0R_76FB7_Ow8Yv8aj_B8TURj787e9BI6swv1xj2qBbQJh3C9ewYfhZdoRgoZNdqEUliXP-KXFD"/>
+</div>
+</div>
+</header>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col z-40 bg-[#131313] border-r border-[#00FBFB]/10 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+<div class="p-6 flex flex-col gap-1 border-b border-outline-variant/10">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 bg-primary-fixed shadow-[0_0_5px_#00FBFB]"></div>
+<span class="font-mono text-xs font-bold tracking-widest text-primary-fixed">SEC-LEVEL-01</span>
+</div>
+<span class="font-mono text-[10px] text-outline tracking-widest">LOCAL_NODE_77</span>
+</div>
+<nav class="flex-1 mt-4">
+<a class="flex items-center gap-4 text-[#3A4A49] py-3 px-6 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out hover:border-l-4 hover:border-[#FFB778] hover:text-[#FFB778] font-mono text-xs font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="terminal">terminal</span>
+                    TERMINAL
+                </a>
+<a class="flex items-center gap-4 bg-gradient-to-r from-[#00FBFB]/20 to-transparent text-[#00FBFB] border-l-4 border-[#00FBFB] py-3 px-6 font-mono text-xs font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="lan">lan</span>
+                    NETWORK
+                </a>
+<a class="flex items-center gap-4 text-[#3A4A49] py-3 px-6 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out hover:border-l-4 hover:border-[#FFB778] hover:text-[#FFB778] font-mono text-xs font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="hub">hub</span>
+                    NODES
+                </a>
+<a class="flex items-center gap-4 text-[#3A4A49] py-3 px-6 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out hover:border-l-4 hover:border-[#FFB778] hover:text-[#FFB778] font-mono text-xs font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="satellite_alt">satellite_alt</span>
+                    SATELLITE
+                </a>
+</nav>
+<div class="p-4">
+<button class="w-full bg-primary-fixed text-on-primary-fixed font-mono text-xs font-black py-3 tracking-[0.2em] shadow-[0_0_15px_rgba(0,251,251,0.3)] active:scale-95 transition-transform">
+                    INITIATE BREACH
+                </button>
+</div>
+<div class="mt-auto border-t border-outline-variant/10">
+<a class="flex items-center gap-4 text-[#3A4A49] py-3 px-6 hover:bg-[#1C1B1B] transition-all duration-150 font-mono text-[10px] tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+                    LOGOUT
+                </a>
+<a class="flex items-center gap-4 text-error py-3 px-6 hover:bg-error-container/10 transition-all duration-150 font-mono text-[10px] tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="power_settings_new">power_settings_new</span>
+                    SYSTEM_SHUTDOWN
+                </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8 tactical-grid min-h-full">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Countdown Header Section -->
+<section class="relative bg-surface-container-low p-10 border border-primary-fixed/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+<div class="corner-bracket-tl"></div>
+<div class="corner-bracket-br"></div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="space-y-2 text-center md:text-left">
+<h2 class="font-mono text-xs text-secondary tracking-[0.4em] uppercase">Rotation Protocol Active</h2>
+<h1 class="font-headline font-black text-4xl tracking-tighter">NEXT_CRYPTOGRAPHIC_SHIFT</h1>
+<p class="font-mono text-[10px] text-outline max-w-xs">Automatic schema reshuffling scheduled for global nodes every 600.00 seconds to prevent pattern-matching decryption attempts.</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="font-mono text-7xl md:text-9xl font-black text-primary-fixed animate-pulse-cyan tracking-tighter">
+                                09:42:18
+                            </div>
+<div class="flex w-full mt-4 h-1 bg-surface-container-highest">
+<div class="h-full bg-primary-fixed shadow-[0_0_10px_#00FBFB]" style="width: 78%;"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Schema Configuration Manager -->
+<section class="lg:col-span-4 relative bg-surface-container border border-outline-variant/10 p-6 flex flex-col gap-6">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+<h3 class="font-mono text-sm font-bold tracking-widest text-primary">SCHEMA_CONFIG_MGR</h3>
+<span class="material-symbols-outlined text-primary-fixed text-sm" data-icon="settings_suggest">settings_suggest</span>
+</div>
+<div class="space-y-4">
+<div class="space-y-1">
+<label class="font-mono text-[10px] text-outline tracking-widest uppercase">Encryption Mode</label>
+<div class="bg-surface-container-highest p-3 flex justify-between items-center border-l-2 border-primary-fixed">
+<span class="font-mono text-xs text-primary-fixed">POLYMORPHIC_V4</span>
+<span class="material-symbols-outlined text-xs text-primary-fixed" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-mono text-[10px] text-outline tracking-widest uppercase">Target Database</label>
+<div class="bg-surface-container-highest p-3 flex justify-between items-center">
+<span class="font-mono text-xs text-on-surface">AEGIS_CORE_PRIME</span>
+<span class="material-symbols-outlined text-xs text-outline" data-icon="database">database</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-mono text-[10px] text-outline tracking-widest uppercase">Latency Tolerance</label>
+<input class="w-full accent-primary-fixed bg-surface-container-highest h-1 appearance-none" type="range"/>
+<div class="flex justify-between font-mono text-[9px] text-outline pt-1">
+<span>0ms</span>
+<span>500ms</span>
+</div>
+</div>
+</div>
+<button class="mt-auto w-full py-3 bg-surface-container-highest border border-primary-fixed/30 font-mono text-[10px] font-bold tracking-[0.2em] text-primary hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">
+                            DEPLOY_CONFIG_UPDATE
+                        </button>
+</section>
+<!-- Schema Table -->
+<section class="lg:col-span-8 relative bg-surface-container-low border border-outline-variant/10 p-1 overflow-hidden">
+<div class="bg-surface-container p-4 border-b border-outline-variant/20 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="description">description</span>
+<span class="font-mono text-xs font-bold tracking-widest">schema_config.csv</span>
+</div>
+<div class="flex gap-2">
+<div class="px-2 py-0.5 border border-outline-variant/30 font-mono text-[9px] text-outline">READ_ONLY</div>
+<div class="px-2 py-0.5 border border-primary-fixed/30 font-mono text-[9px] text-primary-fixed">SYNCED</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-mono text-xs border-collapse">
+<thead class="bg-surface-container-highest text-outline tracking-widest">
+<tr>
+<th class="p-4 font-normal">ACTIVE COLUMN</th>
+<th class="p-4 font-normal">VERSION</th>
+<th class="p-4 font-normal">UPDATE TIMESTAMP</th>
+<th class="p-4 font-normal">STATUS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-primary-fixed/5 transition-colors group">
+<td class="p-4 text-primary-fixed font-bold tracking-tight">ENCRYPT_KEY_DELTA</td>
+<td class="p-4 text-on-surface">v8.4.12</td>
+<td class="p-4 text-outline">2023-11-24 14:02:11</td>
+<td class="p-4">
+<span class="text-[10px] bg-primary-fixed/20 text-primary-fixed px-2 py-0.5">ACTIVE</span>
+</td>
+</tr>
+<tr class="hover:bg-primary-fixed/5 transition-colors">
+<td class="p-4 text-primary-fixed font-bold tracking-tight">REL_AUTH_CHAIN</td>
+<td class="p-4 text-on-surface">v8.4.11</td>
+<td class="p-4 text-outline">2023-11-24 12:44:56</td>
+<td class="p-4">
+<span class="text-[10px] bg-surface-container-highest text-outline px-2 py-0.5">CACHED</span>
+</td>
+</tr>
+<tr class="hover:bg-primary-fixed/5 transition-colors">
+<td class="p-4 text-primary-fixed font-bold tracking-tight">NODE_HEARTBEAT_MAP</td>
+<td class="p-4 text-on-surface">v8.4.10</td>
+<td class="p-4 text-outline">2023-11-24 11:30:02</td>
+<td class="p-4">
+<span class="text-[10px] bg-surface-container-highest text-outline px-2 py-0.5">STABLE</span>
+</td>
+</tr>
+<tr class="hover:bg-primary-fixed/5 transition-colors">
+<td class="p-4 text-primary-fixed font-bold tracking-tight">GEO_FENCE_PARAMS</td>
+<td class="p-4 text-on-surface">v8.4.09</td>
+<td class="p-4 text-outline">2023-11-23 23:59:59</td>
+<td class="p-4">
+<span class="text-[10px] bg-surface-container-highest text-outline px-2 py-0.5">DEPRECATED</span>
+</td>
+</tr>
+<tr class="hover:bg-primary-fixed/5 transition-colors">
+<td class="p-4 text-primary-fixed font-bold tracking-tight">UPLINK_ENCODE_SEED</td>
+<td class="p-4 text-on-surface">v8.4.08</td>
+<td class="p-4 text-outline">2023-11-23 20:15:33</td>
+<td class="p-4">
+<span class="text-[10px] bg-surface-container-highest text-outline px-2 py-0.5">STABLE</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container-highest p-4 flex justify-between items-center">
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-outline hover:text-primary" data-icon="chevron_left">chevron_left</button>
+<span class="font-mono text-[10px] text-outline">PAGE 01 OF 12</span>
+<button class="material-symbols-outlined text-outline hover:text-primary" data-icon="chevron_right">chevron_right</button>
+</div>
+<div class="font-mono text-[10px] text-outline-variant italic">Showing 5 of 124 entries</div>
+</div>
+</section>
+</div>
+<!-- Footer Telemetry -->
+<footer class="pt-8 border-t border-outline-variant/10 flex flex-wrap justify-between items-center gap-4">
+<div class="flex gap-8">
+<div class="flex flex-col">
+<span class="font-mono text-[9px] text-outline uppercase tracking-[0.2em]">Checksum</span>
+<span class="font-mono text-[10px] text-secondary">0x88A2_EF04_1102</span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-[9px] text-outline uppercase tracking-[0.2em]">Uptime</span>
+<span class="font-mono text-[10px] text-primary">1,442:12:09:55</span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-[9px] text-outline uppercase tracking-[0.2em]">Coordinates</span>
+<span class="font-mono text-[10px] text-primary">37.7749° N, 122.4194° W</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></div>
+<span class="font-mono text-[10px] text-primary-fixed tracking-widest uppercase">System Stabilized</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<span class="font-mono text-[10px] text-outline tracking-widest uppercase opacity-50">© 2077 AEGIS_SYSTEMS</span>
+</div>
+</footer>
+</div>
+</main>
+</div>
+</body></html>

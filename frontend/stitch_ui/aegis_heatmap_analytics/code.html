@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AEGIS_TACTICAL | HEATMAP_ANALYSIS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Space Grotesk', monospace;
+            background-color: #050505;
+            color: #e5e2e1;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(255, 255, 255, 0.03) 50%, transparent 50%);
+            background-size: 100% 2px;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 101;
+            background: linear-gradient(0deg, rgba(0, 251, 251, 0) 0%, rgba(0, 251, 251, 0.05) 50%, rgba(0, 251, 251, 0) 100%);
+            opacity: 0.1;
+            position: fixed;
+            bottom: 100%;
+            pointer-events: none;
+        }
+        .corner-bracket {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: #00FBFB;
+        }
+        .corner-tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
+        .corner-br { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
+        
+        .grid-bg {
+            background-image: radial-gradient(circle, #1c1b1b 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-tint": "#00dddd",
+                        "surface-dim": "#131313",
+                        "on-surface-variant": "#b9cac9",
+                        "error": "#ffb4ab",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002020",
+                        "on-secondary": "#4c2700",
+                        "surface-bright": "#3a3939",
+                        "on-tertiary-fixed-variant": "#92001e",
+                        "on-tertiary-container": "#ca002d",
+                        "on-primary": "#003737",
+                        "on-background": "#e5e2e1",
+                        "background": "#131313",
+                        "tertiary-container": "#ffdad8",
+                        "on-secondary-fixed": "#2e1500",
+                        "tertiary-fixed-dim": "#ffb3b2",
+                        "surface-container-low": "#1c1b1b",
+                        "outline": "#839493",
+                        "on-tertiary": "#680012",
+                        "primary-fixed-dim": "#00dddd",
+                        "on-primary-fixed-variant": "#004f4f",
+                        "primary": "#ffffff",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary-container": "#007070",
+                        "inverse-on-surface": "#313030",
+                        "on-secondary-container": "#613400",
+                        "error-container": "#93000a",
+                        "on-surface": "#e5e2e1",
+                        "secondary-fixed-dim": "#ffb778",
+                        "tertiary": "#ffffff",
+                        "surface": "#131313",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#201f1f",
+                        "surface-variant": "#353534",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary": "#ffb778",
+                        "outline-variant": "#3a4a49",
+                        "on-tertiary-fixed": "#410008",
+                        "inverse-primary": "#006a6a",
+                        "primary-fixed": "#00fbfb",
+                        "secondary-container": "#fd9000",
+                        "on-secondary-fixed-variant": "#6c3a00",
+                        "tertiary-fixed": "#ffdad8",
+                        "primary-container": "#00fbfb",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#353534",
+                        "secondary-fixed": "#ffdcc1"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Space Grotesk"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-[#050505] text-on-surface selection:bg-primary-container selection:text-on-primary-fixed">
+<div class="crt-overlay"></div>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50 bg-[#050505] border-b border-[#00FBFB]/20 bg-gradient-to-b from-[#131313] to-[#050505] shadow-[0_0_15px_rgba(0,251,251,0.1)]">
+<div class="flex items-center gap-8">
+<div class="font-black text-xl tracking-[0.2em] text-[#FFFFFF]">AEGIS_TACTICAL</div>
+<nav class="hidden md:flex gap-6">
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">FORENSICS</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">SCHEMA</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#3A4A49] hover:text-[#FFFFFF] transition-colors" href="#">ASSETS</a>
+<a class="font-mono uppercase tracking-tighter text-sm text-[#00FBFB] border-b-2 border-[#00FBFB] pb-1 shadow-[0_4px_10px_-2px_rgba(0,251,251,0.5)]" href="#">HEATMAP</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#00FBFB] text-sm">search</span>
+<input class="bg-[#1C1B1B] border-none text-[#00FBFB] font-mono text-xs pl-9 pr-4 py-1.5 focus:ring-1 focus:ring-[#00FBFB] w-48" placeholder="QUERY_NODES..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-[#3A4A49] hover:text-[#00FBFB] cursor-pointer" data-icon="settings">settings</span>
+<span class="material-symbols-outlined text-[#3A4A49] hover:text-[#00FBFB] cursor-pointer" data-icon="pci_card">payment_card</span>
+<div class="w-8 h-8 bg-surface-container-high border border-[#00FBFB]/30 flex items-center justify-center">
+<img alt="Operator Avatar" class="w-6 h-6 grayscale brightness-150" data-alt="Stylized glitchy minimalist operator avatar icon in cyan and white tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJCyNThgbrPK0oT2d7nqc6wo0Sfwh5nsb235PaIdbZGSmPpa1t5xB0D_y1ys-u-e-ZqznZnDuDOqLriUVPD6Te4k-OlIRB-CdBl3CeWfa83PjuCOG19eplCwybHEeZvt3ufSRErWQclhK72MU0duE3TqCODqT-O0wBhSIh0MuN12NdLYfIOQwXWYrbhM773fn-emT9o9IjMiqFayR6kCcZEIBPdDTYlbVrNgDS9jeB0wlj7EKq9bBb8T0XVHKoEEHRBs83AU3MrKQH"/>
+</div>
+</div>
+</header>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col z-40 bg-[#131313] border-r border-[#00FBFB]/10 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+<div class="p-6 border-b border-[#00FBFB]/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 border border-[#00FBFB] flex items-center justify-center">
+<span class="material-symbols-outlined text-[#00FBFB]" data-icon="hub">hub</span>
+</div>
+<div>
+<div class="font-mono text-xs font-bold tracking-widest text-[#00FBFB]">SEC-LEVEL-01</div>
+<div class="font-mono text-[10px] text-[#3A4A49]">LOCAL_NODE_77</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-4">
+<div class="text-[#3A4A49] py-3 px-4 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out cursor-pointer flex items-center gap-4 group">
+<span class="material-symbols-outlined group-hover:text-secondary" data-icon="terminal">terminal</span>
+<span class="font-mono text-xs font-bold tracking-widest group-hover:text-secondary">TERMINAL</span>
+</div>
+<div class="text-[#3A4A49] py-3 px-4 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out cursor-pointer flex items-center gap-4 group">
+<span class="material-symbols-outlined group-hover:text-secondary" data-icon="lan">lan</span>
+<span class="font-mono text-xs font-bold tracking-widest group-hover:text-secondary">NETWORK</span>
+</div>
+<div class="text-[#3A4A49] py-3 px-4 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out cursor-pointer flex items-center gap-4 group">
+<span class="material-symbols-outlined group-hover:text-secondary" data-icon="hub">hub</span>
+<span class="font-mono text-xs font-bold tracking-widest group-hover:text-secondary">NODES</span>
+</div>
+<div class="text-[#3A4A49] py-3 px-4 hover:bg-[#1C1B1B] transition-all duration-150 ease-in-out cursor-pointer flex items-center gap-4 group">
+<span class="material-symbols-outlined group-hover:text-secondary" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-mono text-xs font-bold tracking-widest group-hover:text-secondary">SATELLITE</span>
+</div>
+</nav>
+<div class="p-4">
+<button class="w-full py-3 bg-primary-container text-on-primary-fixed font-mono text-xs font-black tracking-widest hover:brightness-110 active:scale-95 transition-all">
+                    INITIATE BREACH
+                </button>
+</div>
+<div class="mt-auto p-4 border-t border-[#00FBFB]/5">
+<div class="flex items-center gap-4 text-[#3A4A49] py-2 hover:text-[#FFFFFF] cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+<span class="font-mono text-[10px] tracking-widest">LOGOUT</span>
+</div>
+<div class="flex items-center gap-4 text-error/60 py-2 hover:text-error cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="power_settings_new">power_settings_new</span>
+<span class="font-mono text-[10px] tracking-widest">SYSTEM_SHUTDOWN</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 flex-1 p-6 grid-bg">
+<!-- Header Section -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h1 class="text-4xl font-black tracking-tighter uppercase mb-2">Sleeper Analytics</h1>
+<div class="flex items-center gap-4">
+<span class="text-primary-fixed font-mono text-xs bg-primary-container/10 px-2 py-0.5 border border-primary-container/30">MONITORING_ACTIVE</span>
+<span class="text-outline font-mono text-xs tracking-widest">ENCRYPTION: AES-256-GCM</span>
+<span class="text-outline font-mono text-xs tracking-widest">Uptime: 1,442:12:09</span>
+</div>
+</div>
+<div class="text-right font-mono text-[10px] text-outline">
+<div>LAT: 37.7749</div>
+<div>LNG: -122.4194</div>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Main Visualization Block (response_time_ms) -->
+<div class="col-span-12 lg:col-span-9 bg-surface-container-lowest relative p-8 border border-outline-variant/20">
+<div class="corner-bracket corner-tl"></div>
+<div class="corner-bracket corner-br"></div>
+<div class="flex justify-between items-start mb-8">
+<div>
+<h2 class="text-lg font-bold tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 bg-primary-container animate-pulse"></span>
+                                RESPONSE_TIME_MS Across 500 Nodes
+                            </h2>
+<p class="text-outline text-xs mt-1">Real-time telemetry streams from orbital relay stations</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-primary-container"></div>
+<span class="text-[10px] font-mono text-outline">NOMINAL</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-error"></div>
+<span class="text-[10px] font-mono text-outline uppercase">Anomalous_latency</span>
+</div>
+</div>
+</div>
+<!-- Simulated Chart Area -->
+<div class="relative h-80 w-full overflow-hidden border-l border-b border-outline-variant/30 flex items-end px-2">
+<!-- Chart Lines (Stylized SVG) -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<defs>
+<lineargradient id="grad-cyan" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:rgba(0, 251, 251, 0.2);stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:rgba(0, 251, 251, 0);stop-opacity:1"></stop>
+</lineargradient>
+</defs>
+<!-- Background Wave Fill -->
+<path d="M0 240 L50 220 L100 250 L150 180 L200 200 L250 150 L300 170 L350 100 L400 230 L450 200 L500 220 L550 180 L600 210 L650 140 L700 160 L750 250 L800 220 L850 200 L900 210 V320 H0 Z" fill="url(#grad-cyan)"></path>
+<!-- Main Line -->
+<polyline fill="none" points="0,240 50,220 100,250 150,180 200,200 250,150 300,170 350,100 400,230 450,200 500,220 550,180 600,210 650,140 700,160 750,250 800,220 850,200 900,210" stroke="#00FBFB" stroke-width="2"></polyline>
+<!-- Latency Spike Highlights (Bright Red) -->
+<circle cx="350" cy="100" fill="#ffb4ab" r="4"></circle>
+<circle cx="650" cy="140" fill="#ffb4ab" r="4"></circle>
+<!-- Red Warning Line for Threshold -->
+<line opacity="0.5" stroke="#ffb4ab" stroke-dasharray="5,5" stroke-width="1" x1="0" x2="1000" y1="120" y2="120"></line>
+</svg>
+<!-- Legend/Labels -->
+<div class="absolute top-[100px] left-[360px] bg-error/20 border border-error p-2 pointer-events-none">
+<div class="text-[10px] font-bold text-error">LATENCY_SPIKE_DETECTION</div>
+<div class="text-[9px] font-mono text-on-error-container">NODE_ID: 0x88F | 422ms</div>
+</div>
+<div class="absolute top-[140px] left-[660px] bg-error/20 border border-error p-2 pointer-events-none">
+<div class="text-[10px] font-bold text-error">LATENCY_SPIKE_DETECTION</div>
+<div class="text-[9px] font-mono text-on-error-container">NODE_ID: 0x21C | 398ms</div>
+</div>
+<!-- Grid lines labels -->
+<div class="absolute left-1 top-0 bottom-0 flex flex-col justify-between py-2 pointer-events-none">
+<span class="text-[9px] font-mono text-outline">500ms</span>
+<span class="text-[9px] font-mono text-error">350ms_LIMIT</span>
+<span class="text-[9px] font-mono text-outline">200ms</span>
+<span class="text-[9px] font-mono text-outline">0ms</span>
+</div>
+</div>
+</div>
+<!-- Secondary Data Rack -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+<!-- Alert Panel -->
+<div class="bg-surface-container-low p-5 border border-error/20 relative">
+<div class="flex items-center gap-3 mb-4 text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-mono text-xs font-bold tracking-widest">ANOMALY_LOG</span>
+</div>
+<div class="space-y-3">
+<div class="border-l-2 border-error/50 pl-3 py-1">
+<div class="text-[10px] font-mono text-outline">T: 12:44:01</div>
+<div class="text-xs font-bold text-error">Jitter in Cluster_C</div>
+</div>
+<div class="border-l-2 border-primary-container/50 pl-3 py-1">
+<div class="text-[10px] font-mono text-outline">T: 12:43:55</div>
+<div class="text-xs font-bold text-on-surface">Node_Recalibration...</div>
+</div>
+<div class="border-l-2 border-error/50 pl-3 py-1">
+<div class="text-[10px] font-mono text-outline">T: 12:43:10</div>
+<div class="text-xs font-bold text-error">Satellite_Packet_Loss</div>
+</div>
+</div>
+</div>
+<!-- Status Display -->
+<div class="bg-surface-container-low p-5 border border-outline-variant/10 flex-1 flex flex-col justify-between">
+<div>
+<div class="text-[10px] font-mono text-outline uppercase mb-1">Global Load</div>
+<div class="text-2xl font-black text-primary-fixed mb-4">68.2%</div>
+<div class="h-1 bg-surface-container-high w-full">
+<div class="h-full bg-primary-container" style="width: 68%;"></div>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/10">
+<div class="text-[10px] font-mono text-outline uppercase mb-2">Satellite Status</div>
+<div class="grid grid-cols-4 gap-2">
+<div class="w-full aspect-square bg-primary-container/20 border border-primary-container/50 flex items-center justify-center">
+<div class="w-1 h-1 bg-primary-container rounded-full"></div>
+</div>
+<div class="w-full aspect-square bg-primary-container/20 border border-primary-container/50 flex items-center justify-center">
+<div class="w-1 h-1 bg-primary-container rounded-full"></div>
+</div>
+<div class="w-full aspect-square bg-error/20 border border-error/50 flex items-center justify-center">
+<div class="w-1 h-1 bg-error rounded-full"></div>
+</div>
+<div class="w-full aspect-square bg-primary-container/20 border border-primary-container/50 flex items-center justify-center">
+<div class="w-1 h-1 bg-primary-container rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Heatmap Mosaic Section -->
+<div class="col-span-12 bg-surface-container-lowest border border-outline-variant/10 p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-bold tracking-widest text-[#00FBFB] uppercase">Node_Density_Matrix</h3>
+<div class="flex gap-2 font-mono text-[9px] text-outline">
+<span class="px-2 py-0.5 border border-outline-variant/30">ROWS: 64</span>
+<span class="px-2 py-0.5 border border-outline-variant/30">COLS: 128</span>
+</div>
+</div>
+<!-- Decorative Heatmap Mosaic -->
+<div class="w-full aspect-[21/9] bg-[#0A0A0A] overflow-hidden grid grid-cols-12 grid-rows-6 gap-1 p-1">
+<!-- Simulated heat map squares -->
+<div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-error/20 animate-pulse"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/20"></div>
+<div class="bg-primary-container/20"></div><div class="bg-primary-container/40"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-error/60"></div><div class="bg-error/40"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/40"></div>
+<div class="bg-primary-container/10"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-error/40"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/30"></div><div class="bg-primary-container/10"></div>
+<div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/40"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/60"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/5"></div>
+<div class="bg-primary-container/20"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/40"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div>
+<div class="bg-primary-container/10"></div><div class="bg-primary-container/30"></div><div class="bg-primary-container/50"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/10"></div><div class="bg-primary-container/5"></div><div class="bg-primary-container/20"></div><div class="bg-primary-container/40"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer Decorative Elements -->
+<footer class="fixed bottom-0 left-0 right-0 h-8 bg-[#050505] border-t border-outline-variant/10 z-50 flex items-center justify-between px-6 pointer-events-none">
+<div class="font-mono text-[9px] text-outline flex gap-6">
+<span class="text-primary-container/60">SYS_CHECK: OK</span>
+<span>MEMORY_POOL: 0x822A..0xFB32</span>
+<span>CHECKSUM: 9b2d8e4f1</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 h-2 bg-surface-container-high overflow-hidden">
+<div class="h-full bg-primary-container/40 w-1/2 animate-infinite-slide"></div>
+</div>
+<span class="font-mono text-[9px] text-outline">SECURE_CHANNEL_READY</span>
+</div>
+</footer>
+<!-- CSS Animation for some movement -->
+<style>
+        @keyframes slide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        .animate-infinite-slide {
+            animation: slide 3s linear infinite;
+        }
+    </style>
+</body></html>
