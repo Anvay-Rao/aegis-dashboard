@@ -114,78 +114,87 @@ class Analyzer:
             self.processed_data.append(item)
             
         # Compute Risk Score
-        # Risk Score Combine: error_rate, latency_spikes, traffic_spikes (ddos)
+        total_logs = len(self.processed_data)
+        active_threats = 0
+
+        dashboard_nodes = []
+        import random
+        
         for node_id, states in self.node_states.items():
+            if not states: continue
+            
+            latest = states[-1]
             errors = sum(1 for s in states if "error" in s["flags"])
             lat_spikes = sum(1 for s in states if "latency_spike" in s["flags"])
             ddos = sum(1 for s in states if "ddos" in s["flags"])
             
-            total = len(states)
-            if total == 0:
-                risk = 0.0
-            else:
-                # normalize metrics
-                error_rate = errors / total
-                lat_rate = lat_spikes / total
-                ddos_rate = ddos / total
-                risk = (error_rate * 0.4 + lat_rate * 0.3 + ddos_rate * 0.3)
-                risk = min(risk * 10, 1.0) # Scale up naturally to 0-1 range
+            is_infected = (errors > 0 or lat_spikes > 0 or ddos > 0)
             
-            self.node_risk[node_id] = risk
-            
-            # update risk score in states
-            for s in states:
-                s["risk_score"] = risk
+            # Conflict Detect
+            last_status = latest.get("json_status", "OPERATIONAL") # Stub out if not in dataset
+            last_code = latest["status_code"]
+            conflict_detected = (str(last_status).upper() == "OPERATIONAL" and last_code >= 400)
                 
-    def get_latest_data(self, limit=100):
-        # sort processed data by timestamp desc
-        return self.processed_data[-limit:]
+            if is_infected or conflict_detected:
+                active_threats += 1
+                
+            x_pos = random.random()
+            y_pos = random.random()
+            
+            dashboard_nodes.append({
+                "id": node_id,
+                "pos": {"x": x_pos, "y": y_pos},
+                "is_infected": is_infected,
+                "conflict_detected": conflict_detected,
+                "last_http_code": last_code,
+                "reported_json": last_status,
+                "decoded_serial": latest["decoded_serial"] if latest["decoded_serial"] else "UNKNOWN",
+                "encoded_ua": latest["encoded_serial"] if latest["encoded_serial"] else "UNKNOWN"
+            })
+            
+        self.dashboard_nodes = dashboard_nodes
+        self.metadata = {
+            "system_time": int(datetime.utcnow().timestamp()),
+            "total_logs_processed": total_logs,
+            "active_threats": active_threats,
+            "status": "CRITICAL" if active_threats > 0 else "OPERATIONAL"
+        }
+                
+    def get_dashboard_data(self):
+        timestamps = []
+        avg_latency = []
+        anomaly_points = []
+        
+        times = collections.defaultdict(list)
+        for d in self.processed_data[-500:]:
+            ts = d["timestamp"]
+            times[ts].append(d["latency"])
+            if "latency_spike" in d["flags"]:
+                anomaly_points.append({"timestamp": ts, "latency": d["latency"], "node_id": d["node_id"]})
+        
+        for ts in sorted(times.keys()):
+            timestamps.append(ts)
+            avg_latency.append(sum(times[ts]) / len(times[ts]))
 
-    def get_nodes(self):
-        # return latest node risk and status
-        resp = []
-        for node_id, r in self.node_risk.items():
-            latest = self.node_states[node_id][-1]
-            resp.append({
-                "node_id": node_id,
-                "risk_score": r,
-                "is_online": True,
-                "flags": latest["flags"],
-                "last_latency": latest["latency"]
-            })
-        return resp
+        terminal_logs = []
+        for d in self.processed_data[-100:]:
+            terminal_logs.append(f"HTTP {d['status_code']} | Latency: {d['latency']:.1f}ms | Node: {d['node_id']}")
+
+        latest_schema = self.get_schema_version(len(self.processed_data))
         
-    def get_heatmap_data(self):
-        # latency over time per node
-        # we can subsample if too large
-        points = []
-        # taking last 1000 for heatmap
-        for d in self.processed_data[-1000:]:
-            points.append({
-                "node_id": d["node_id"],
-                "time": d["timestamp"],
-                "latency": d["latency"]
-            })
-        return points
-        
-    def get_schemas(self):
-        # schema version timeline
-        points = []
-        # aggregate schemas over time
-        for d in self.processed_data[-1000:]:
-            points.append({
-                "time": d["timestamp"],
-                "schema_version": d["schema_version"]
-            })
-        return points
-        
-    def get_assets(self):
-        # set of decoded serials
-        assets = []
-        seen = set()
-        for d in self.processed_data:
-            s = d["decoded_serial"]
-            if s and s not in seen:
-                assets.append({"node_id": d["node_id"], "serial": s})
-                seen.add(s)
-        return assets
+        return {
+            "metadata": self.metadata,
+            "schema_engine": {
+                "current_version": int(latest_schema) if str(latest_schema).isdigit() else 1,
+                "active_column": "L_V1",
+                "rotation_timer": "600s",
+                "sync_status": "SYNCED"
+            },
+            "nodes": self.dashboard_nodes,
+            "heatmap_data": {
+                "timestamps": timestamps,
+                "avg_latency": avg_latency,
+                "anomaly_points": anomaly_points
+            },
+            "live_terminal_logs": terminal_logs
+        }

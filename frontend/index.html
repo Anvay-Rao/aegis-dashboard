@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS_LOGIN - NEURAL_OS_v8.4</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .cyber-border {
+            border: 1px solid #00FBFB;
+            box-shadow: 0 0 15px rgba(0, 251, 251, 0.4);
+            background: rgba(10, 10, 10, 0.9);
+            position: relative;
+        }
+
+        .corner-bracket-tl {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 12px;
+            height: 12px;
+            border-top: 2px solid #00FBFB;
+            border-left: 2px solid #00FBFB;
+        }
+
+        .corner-bracket-br {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-bottom: 2px solid #00FBFB;
+            border-right: 2px solid #00FBFB;
+        }
+
+        input {
+            background: rgba(0, 251, 251, 0.05);
+            border: 1px solid #00FBFB;
+            color: #00FBFB;
+            padding: 10px;
+            width: 100%;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        input:focus {
+            box-shadow: 0 0 8px rgba(0, 251, 251, 0.6);
+        }
+
+        button {
+            background: #00FBFB;
+            color: #050505;
+            font-weight: bold;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px #00FBFB;
+        }
+
+        .error-msg {
+            color: #e00460;
+            text-shadow: 0 0 5px #e00460;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="cyber-border w-96 p-8 relative flex flex-col gap-6">
+        <div class="corner-bracket-tl"></div>
+        <div class="corner-bracket-br"></div>
+
+        <div class="text-center">
+            <h1 class="text-2xl font-black text-[#00FBFB] tracking-widest uppercase"
+                style="text-shadow: 0 0 8px rgba(0,251,251,0.5);">AEGIS_SECURE_AUTH</h1>
+            <p class="text-[10px] text-gray-400 mt-2 uppercase tracking-[0.2em]">Restricted Access Terminal</p>
+        </div>
+
+        <form id="login-form" class="flex flex-col gap-4">
+            <div>
+                <label class="text-[10px] text-[#00FBFB] uppercase tracking-widest mb-1 block">Operator ID</label>
+                <input type="text" id="username" required>
+            </div>
+            <div>
+                <label class="text-[10px] text-[#00FBFB] uppercase tracking-widest mb-1 block">Passcode</label>
+                <input type="password" id="password" required>
+            </div>
+            <div id="error-msg" class="error-msg text-center">ACCESS DENIED. Invalid Credentials.</div>
+            <button type="submit"
+                class="mt-4 border border-[#00FBFB] shadow-[0_0_10px_rgba(0,251,251,0.2)]">LOGIN</button>
+        </form>
+    </div>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
